@@ -23,9 +23,10 @@ public class MyColorFinder
 	 * @param L lightness (in 0..100)
 	 * @param C chroma or saturation (in 0..100)
 	 * @param minDist the minimum color distance between two colors in delta E (1.0 indicates a diff. that is perceivable by 50% of the population)
+	 * @param samplingRate the rate at which the hue circle is sampled
 	 * @return a list of colors
 	 */
-	public static List<Color> findCAMColors(float L, float C, float minDist)
+	public static List<Color> findCAMColors(float L, float C, float minDist, float samplingRate)
 	{
 		List<Color> colors = new ArrayList<>();
 
@@ -33,14 +34,13 @@ public class MyColorFinder
 		CAMLch firstColor = prevColor;
 
 		// sample a ring (0-360 degrees) in tiny steps to identify colors with a color distance of 1
-		for (float hue = 0; hue < 360; hue += 0.1) 
+		for (float hue = 0; hue < 360; hue += samplingRate) 
 		{
 			CAMLch color = new CAMLch(new float[] { L, C, hue }, 1f, JCH_SPACE);
 
-			double dist = ColorTools.distance(prevColor, color, VIEW_ENV);
-			double distToFirst = ColorTools.distance(firstColor, color, VIEW_ENV);
-
-			if (dist > minDist && distToFirst > minDist) 
+			if (minDist == 0 || 
+					(ColorTools.distance(prevColor, color, VIEW_ENV) > minDist 
+				  && ColorTools.distance(firstColor, color, VIEW_ENV) > minDist)) 
 			{
 				colors.add(new Color(color.getARGB()));
 				prevColor = color;

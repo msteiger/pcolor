@@ -4,6 +4,7 @@ package de.fhg.igd.pcolor.examples.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -14,6 +15,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -49,6 +51,9 @@ public class SwingColorViewer
 		controls.add(lumSpinner);
 		controls.add(new JLabel("Chroma"));
 		controls.add(chromaSpinner);
+//		controls.add(new JLabel());
+		final JCheckBox regularSampleBox = new JCheckBox("Regular Sampling");
+		controls.add(regularSampleBox);
 		JButton dumpButton = new JButton("Dump Java constants");
 		dumpButton.addActionListener(new ActionListener()
 		{
@@ -57,7 +62,9 @@ public class SwingColorViewer
 			{
 				float lum = ((Number)lumSpinner.getValue()).floatValue();
 				float chroma = ((Number)chromaSpinner.getValue()).floatValue();
-				List<Color> colors = MyColorFinder.findCAMColors(lum, chroma, 1f);
+				float samplingRate = regularSampleBox.isSelected() ? 1f : 0.1f;
+				float minDist = regularSampleBox.isSelected() ? 0f : 1f;				
+				List<Color> colors = MyColorFinder.findCAMColors(lum, chroma, minDist, samplingRate);
 
 				int cols = 4;
 				int idx = 0;
@@ -81,7 +88,10 @@ public class SwingColorViewer
 			{
 				float lum = ((Number)lumSpinner.getValue()).floatValue();
 				float chroma = ((Number)chromaSpinner.getValue()).floatValue();
-				List<Color> colors = MyColorFinder.findCAMColors(lum, chroma, 1f);
+				float samplingRate = regularSampleBox.isSelected() ? 1f : 0.1f;
+				float minDist = regularSampleBox.isSelected() ? 0f : 1f;
+					
+				List<Color> colors = MyColorFinder.findCAMColors(lum, chroma, minDist, samplingRate);
 				comp.setColors(colors);
 				bigWheel.setColors(colors);
 			}
@@ -100,7 +110,7 @@ public class SwingColorViewer
         float[] chroms = { 50, 55, 60, 55, 50 };
 		for (int i = 0; i < 5; i++)
 		{
-			JColorWheel wheel = new JColorWheel(MyColorFinder.findCAMColors(lums[i], chroms[i], 1f));
+			JColorWheel wheel = new JColorWheel(MyColorFinder.findCAMColors(lums[i], chroms[i], 0f, 1f));
 			wheel.setToolTipText(String.format("Lum %.0f - Chroma %.0f", lums[i], chroms[i]));
 			frameWheel.add(wheel);
 		}
@@ -112,6 +122,7 @@ public class SwingColorViewer
 		centerPanel.add(bigWheel, BorderLayout.EAST);
 		frameAnim.add(centerPanel, BorderLayout.CENTER);
 		
+		regularSampleBox.addChangeListener(changeListener);
 		changeListener.stateChanged(null);
 
 		frameAnim.setTitle("Color Viewer");
